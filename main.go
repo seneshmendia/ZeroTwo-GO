@@ -147,6 +147,12 @@ func init() {
 	store.DeviceProps.PlatformType = waProto.DeviceProps_FIREFOX.Enum()
 	store.DeviceProps.Os = proto.String(string(dxz))
 	fmt.Print(renderStr)
+
+	folderPath := "temp"
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		os.Mkdir(folderPath, 0777)
+		log.Println("Temp folder created")
+	}
 }
 
 func registerHandler(sock *waSocket.Client) func(evt interface{}) {

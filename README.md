@@ -1,4 +1,6 @@
-> Base On [readstory base](https://github.com/amiruldev20/readstory)
+# WhatsApp Bot Golang
+
+> Base on [readstory bot](https://github.com/amiruldev20/readstory)
 
 ## Requirement
 

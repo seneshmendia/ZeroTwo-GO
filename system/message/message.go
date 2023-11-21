@@ -12,8 +12,10 @@
 package message
 
 import (
+	"bytes"
 	"fmt"
 	"gowabot/system/lib"
+	"image/jpeg"
 	"log"
 	"os"
 	"strconv"
@@ -21,17 +23,18 @@ import (
 
 	"github.com/amiruldev20/waSocket"
 	"github.com/amiruldev20/waSocket/types/events"
-	"github.com/joho/godotenv"
+	"github.com/nickalie/go-webpbin"
+	// "github.com/joho/godotenv"
 	// "github.com/nickalie/go-webpbin"
 	// "github.com/chai2010/webp"
 )
 
 func Msg(sock *waSocket.Client, msg *events.Message) {
 
-	err := godotenv.Load()
-	if err != nil {
-		panic("Error load file .env")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	panic("Error load file .env")
+	// }
 
 	var (
 		prefix  = os.Getenv("BOT_PREFIX")
@@ -96,7 +99,60 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 					return
 				}
 
-				m.ReplyAsSticker(data)
+				randomJpgImg := "./temp/" + lib.GenerateRandomString(5) + ".jpg"
+				randomWebpImg := "./temp/" + lib.GenerateRandomString(5) + ".webp"
+				if err := os.WriteFile(randomJpgImg, data, 0600); err != nil {
+					log.Printf("Failed to save image: %v", err)
+					return
+				}
+
+				log.Printf("Saved image in %s", randomJpgImg)
+
+				imgbyte, err := os.ReadFile(randomJpgImg)
+				if err != nil {
+					fmt.Println("Error reading file:", err)
+					return
+				}
+
+				decodeImg, err := jpeg.Decode(bytes.NewReader(imgbyte))
+				if err != nil {
+					fmt.Println("Error decoding file:", err)
+					return
+				}
+
+				fmt.Println("convert jpg to webp...")
+				f, err := os.Create(randomWebpImg)
+
+				if err != nil {
+					log.Println(err)
+					return
+				}
+
+				if err := webpbin.Encode(f, decodeImg); err != nil {
+					f.Close()
+					log.Println(err)
+					return
+				}
+
+				if err := f.Close(); err != nil {
+					log.Println(err)
+					return
+				}
+
+				fmt.Println("Success convert to webp")
+				webpByte, err := os.ReadFile(randomWebpImg)
+				if err != nil {
+					fmt.Println("Error reading file:", err)
+					return
+				}
+
+				fmt.Println("Sending webp as sticker...")
+
+				m.ReplyAsSticker(webpByte)
+
+				// delete file image
+				err = os.Remove(randomJpgImg)
+				err = os.Remove(randomWebpImg)
 			}
 			break
 		case "sendimg":

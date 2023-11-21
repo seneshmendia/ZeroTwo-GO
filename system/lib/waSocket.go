@@ -12,11 +12,9 @@
 package lib
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"gowabot/system/dto"
-	"image/jpeg"
 	"io"
 	"log"
 	"net/http"
@@ -28,7 +26,6 @@ import (
 	waProto "github.com/amiruldev20/waSocket/binary/proto"
 	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
-	"github.com/nickalie/go-webpbin"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -106,56 +103,7 @@ func (m *renz) SendSticker(jid types.JID, data []byte, extra ...dto.ExtraSend) {
 		}
 	}
 
-	randomJpgImg := "./temp/" + GenerateRandomString(5) + ".jpg"
-	randomWebpImg := "./temp/" + GenerateRandomString(5) + ".webp"
-	if err := os.WriteFile(randomJpgImg, data, 0600); err != nil {
-		log.Printf("Failed to save image: %v", err)
-		return
-	}
-
-	log.Printf("Saved image in %s", randomJpgImg)
-
-	imgbyte, err := os.ReadFile(randomJpgImg)
-	if err != nil {
-		fmt.Println("Error reading file:", err)
-		return
-	}
-
-	decodeImg, err := jpeg.Decode(bytes.NewReader(imgbyte))
-	if err != nil {
-		fmt.Println("Error decoding file:", err)
-		return
-	}
-
-	fmt.Println("convert jpg to webp...")
-	f, err := os.Create(randomWebpImg)
-
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	if err := webpbin.Encode(f, decodeImg); err != nil {
-		f.Close()
-		log.Println(err)
-		return
-	}
-
-	if err := f.Close(); err != nil {
-		log.Println(err)
-		return
-	}
-
-	fmt.Println("Success convert to webp")
-	webpByte, err := os.ReadFile(randomWebpImg)
-	if err != nil {
-		fmt.Println("Error reading file:", err)
-		return
-	}
-
-	fmt.Println("Sending webp as sticker...")
-
-	uploadImg, err := m.sock.Upload(context.Background(), webpByte, waSocket.MediaImage)
+	uploadImg, err := m.sock.Upload(context.Background(), data, waSocket.MediaImage)
 
 	if err != nil {
 		log.Println(err)
@@ -168,18 +116,14 @@ func (m *renz) SendSticker(jid types.JID, data []byte, extra ...dto.ExtraSend) {
 			FileSha256:    uploadImg.FileSHA256,
 			FileEncSha256: uploadImg.FileEncSHA256,
 			MediaKey:      uploadImg.MediaKey,
-			Mimetype:      proto.String(http.DetectContentType(webpByte)),
+			Mimetype:      proto.String(http.DetectContentType(data)),
 			DirectPath:    proto.String(uploadImg.DirectPath),
-			FileLength:    proto.Uint64(uint64(len(webpByte))),
+			FileLength:    proto.Uint64(uint64(len(data))),
 			ContextInfo:   contextInfo,
-			// FirstFrameSidecar: webpByte,
-			// PngThumbnail:      webpByte,
+			// FirstFrameSidecar: data,
+			// PngThumbnail:      data,
 		},
 	})
-
-	// delete file image
-	err = os.Remove(randomJpgImg)
-	err = os.Remove(randomWebpImg)
 
 	if err != nil {
 		log.Println(err)

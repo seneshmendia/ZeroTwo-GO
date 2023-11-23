@@ -283,14 +283,30 @@ func (m *renz) SendContact(jid types.JID, number string, nama string) {
 }
 
 /* create channel */
-func (m *renz) createChannel(params []string) {
-	_,
+// func (m *renz) createChannel(params []string) {
+// 	_,
+// 		err := m.sock.CreateNewsletter(waSocket.CreateNewsletterParams{
+// 		Name: strings.Join(params, " "),
+// 	})
+// 	if err != nil {
+// 		return
+// 	}
+// }
+
+/* create channel */
+func (m *renz) CreateChannel(title, description string) {
+	metadata,
 		err := m.sock.CreateNewsletter(waSocket.CreateNewsletterParams{
-		Name: strings.Join(params, " "),
+		Name:        title,
+		Description: description,
+		// Picture: profilePicture,
 	})
 	if err != nil {
+		m.Reply("Error creating channel:" + err.Error())
 		return
 	}
+	jid := metadata.ID
+	m.Reply(fmt.Sprintf("Success create channel\nJID: %s\nName: %s\nDescription: %s\nLink: https://whatsapp.com/channel/%s", jid, metadata.ThreadMeta.Name.Text, metadata.ThreadMeta.Description.Text, metadata.ThreadMeta.InviteCode))
 }
 
 /* fetch group admin */

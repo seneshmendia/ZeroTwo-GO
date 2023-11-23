@@ -46,7 +46,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 	/* my function */
 	m := lib.NewSimp(sock, msg)
-	//from := msg.Info.Chat
+	from := msg.Info.Chat
 	sender := msg.Info.Sender.String()
 	pushName := msg.Info.PushName
 	isOwner := strings.Contains(sender, owner)
@@ -160,7 +160,19 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				m.Reply("Url cannot empty")
 				return
 			}
-			m.SendImg(m.Msg.Info.Chat, query)
+			m.SendImg(from, query)
+			break
+			//command create channel
+			// jangan brutal ntar turu nangid :'(
+		case "nc":
+			if !isOwner {
+				m.Reply("Hanya owner bot")
+				return
+			}
+			split := strings.Split(query, "|")
+			title := split[0]
+			desc := strings.Join(split[1:], " ")
+			m.CreateChannel(title, desc)
 			break
 		}
 	}

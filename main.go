@@ -158,6 +158,7 @@ func init() {
 func registerHandler(sock *waSocket.Client) func(evt interface{}) {
 	return func(evt interface{}) {
 		switch v := evt.(type) {
+
 		case *events.Message:
 			if strings.HasPrefix(v.Info.ID, "BAE5") {
 				return

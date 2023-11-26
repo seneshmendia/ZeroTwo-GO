@@ -1,9 +1,9 @@
-module gowabot
+module whatsapp-bot-go
 
 go 1.21.4
 
 require (
-	github.com/amiruldev20/waSocket v1.0.5
+	github.com/amiruldev20/waSocket v1.0.6
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.18
 	github.com/mdp/qrterminal v1.0.1
@@ -17,7 +17,7 @@ require (
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
 	github.com/nickalie/go-binwrapper v0.0.0-20190114141239-525121d43c84 // indirect
@@ -28,7 +28,6 @@ require (
 	go.mau.fi/libsignal v0.1.0 // indirect
 	go.mau.fi/util v0.2.1 // indirect
 	golang.org/x/crypto v0.15.0 // indirect
-	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
 	golang.org/x/net v0.18.0 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )

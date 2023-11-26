@@ -14,14 +14,15 @@ package message
 import (
 	"bytes"
 	"fmt"
-	"gowabot/system/lib"
 	"image/jpeg"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"whatsapp-bot-go/system/lib"
 
 	"github.com/amiruldev20/waSocket"
+	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
 	"github.com/nickalie/go-webpbin"
 	// "github.com/joho/godotenv"
@@ -37,12 +38,11 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	// }
 
 	var (
-		prefix  = os.Getenv("BOT_PREFIX")
-		self, _ = strconv.ParseBool(strings.ToLower(os.Getenv("BOT_SELF")))
-		owner   = os.Getenv("OWNER_NUMBER")
+		prefix    = os.Getenv("BOT_PREFIX")
+		self, _   = strconv.ParseBool(strings.ToLower(os.Getenv("BOT_SELF")))
+		owner     = os.Getenv("OWNER_NUMBER")
+		botNumber = os.Getenv("BOT_NUMBER")
 	)
-
-	// botNumber := os.Getenv("BOT_NUMBER")
 
 	/* my function */
 	m := lib.NewSimp(sock, msg)
@@ -50,9 +50,9 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	sender := msg.Info.Sender.String()
 	pushName := msg.Info.PushName
 	isOwner := strings.Contains(sender, owner)
-	//isAdmin := m.GetGroupAdmin(from, sender)
-	//isBotAdm := m.GetGroupAdmin(from, botNumber + "@s.whatsapp.net")
-	//isGroup := msg.Info.IsGroup
+	isAdmin := m.GetGroupAdmin(from, sender)
+	isBotAdm := m.GetGroupAdmin(from, botNumber+"@s.whatsapp.net")
+	isGroup := msg.Info.IsGroup
 	args := strings.Split(m.GetCMD(), " ")
 	query := strings.Join(args[1:], ` `)
 	//extended := msg.Message.GetExtendedTextMessage()
@@ -62,7 +62,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	//quotedSticker := quotedMsg.GetStickerMessage()
 
 	//-- CONSOLE LOG
-	// fmt.Println(msg)
+	fmt.Println(msg)
 	fmt.Println("\n===============================\nNAME: " + pushName + "\nJID: " + sender + "\nTYPE: " + msg.Info.Type + "\nMessage: " + m.GetCMD() + "")
 	//fmt.Println(m.Msg.Message.GetPollUpdateMessage().GetMetadata())
 
@@ -160,7 +160,16 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				m.Reply("Url cannot empty")
 				return
 			}
+
 			m.SendImg(from, query)
+			break
+		case "sendimgc":
+			if query == "" {
+				m.Reply("Url cannot empty")
+				return
+			}
+			m.SendMsg(types.NewJID("120363199707822790", "newsletter"), "Send img tes")
+			m.SendImg(types.NewJID("120363199707822790", "newsletter"), query)
 			break
 			//command create channel
 			// jangan brutal ntar turu nangid :'(
@@ -173,6 +182,42 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			title := split[0]
 			desc := strings.Join(split[1:], " ")
 			m.CreateChannel(title, desc)
+			break
+
+		case "kick":
+			if !isGroup {
+				m.Reply("Bukan grup")
+				return
+			}
+			if !isAdmin {
+				m.Reply("Anda bukan admin grup ini")
+				return
+			}
+			if !isBotAdm {
+				m.Reply("Saya bukan admin grup ini")
+				return
+			}
+			if m.Msg.Message.ExtendedTextMessage.ContextInfo.Participant != nil {
+				// m.Reply("Reply pesan anggota yang akan di kick")
+				// return
+
+				participant := m.Msg.Message.ExtendedTextMessage.ContextInfo.Participant
+				parse_participant, _ := types.ParseJID(*participant)
+
+				_, err := sock.UpdateGroupParticipants(from, map[types.JID]waSocket.ParticipantChange{
+					parse_participant: waSocket.ParticipantChangeRemove,
+				})
+
+				if err != nil {
+					m.Reply("Gabisa di tendang uy\nmenolak ilang dia")
+					return
+				}
+
+				m.Reply("Sayonara")
+			} else {
+				m.Reply("Reply pesan anggota yang akan di kick")
+			}
+
 			break
 		}
 	}

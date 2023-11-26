@@ -13,14 +13,15 @@ package lib
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
-	"gowabot/system/dto"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"whatsapp-bot-go/system/dto"
 
 	"github.com/amiruldev20/waSocket"
 	waProto "github.com/amiruldev20/waSocket/binary/proto"
@@ -133,23 +134,23 @@ func (m *renz) SendSticker(jid types.JID, data []byte, extra ...dto.ExtraSend) {
 
 /* send image */
 func (m *renz) SendImg(jid types.JID, value interface{}) {
-	var uploadImg waSocket.UploadResponse
+	var uploadedImg waSocket.UploadResponse
 	var imgByte []byte
 	randomJpgImg := "./temp/" + GenerateRandomString(5) + ".jpg"
 
-	if imageUrl, ok := value.(string); ok {
-		_, err := url.ParseRequestURI(imageUrl)
+	if dataUrl, ok := value.(string); ok {
+		_, err := url.ParseRequestURI(dataUrl)
 		if err != nil {
 			log.Println("Invalid url")
 			return
 		}
 
-		if !IsValidImageURL(imageUrl) {
+		if !IsValidImageURL(dataUrl) {
 			log.Println("Invalid image url")
 			return
 		}
 
-		res, err := http.Get(imageUrl)
+		res, err := http.Get(dataUrl)
 		if err != nil {
 			log.Println("Failed to fetch image:", err)
 			return
@@ -161,39 +162,44 @@ func (m *renz) SendImg(jid types.JID, value interface{}) {
 			log.Println("Failed to create file:", err)
 			return
 		}
-		defer file.Close() // Pastikan menutup file setelah selesai
+		defer file.Close()
 
-		// menghindari membaca seluruh respons HTTP body (dari res.Body) ke dalam memori secara keseluruhan
-		// source: chatgpt :v
 		_, err = io.Copy(file, res.Body)
 		if err != nil {
 			log.Println("Failed to copy image:", err)
 			return
 		}
 
-		imgByte, err = os.ReadFile(randomJpgImg)
+		imgByte, err = os.ReadFile(file.Name())
 		if err != nil {
 			log.Println("Cannot read file image:", err)
 			return
 		}
 
-		uploadImg, err = m.sock.Upload(context.Background(), imgByte, waSocket.MediaImage)
-		if err != nil {
-			log.Println("Failed to upload file:", err)
-			return
-		}
-
 	}
 
-	_, err := m.sock.SendMessage(context.Background(), m.Msg.Info.Chat, &waProto.Message{
+	if dataByte, ok := value.([]byte); ok {
+		imgByte = dataByte
+	}
+
+	uploadedImg, err := m.sock.Upload(context.Background(), imgByte, waSocket.MediaImage)
+
+	if err != nil {
+		log.Println("Failed to upload file:", err)
+		return
+	}
+
+	hs := sha256.New()
+	// hs.Write(imgByte)
+	_, err = m.sock.SendMessage(context.Background(), m.Msg.Info.Chat, &waProto.Message{
 		ImageMessage: &waProto.ImageMessage{
-			JpegThumbnail: imgByte, // blm work
-			Url:           proto.String(uploadImg.URL),
-			DirectPath:    proto.String(uploadImg.DirectPath),
-			MediaKey:      uploadImg.MediaKey,
+			JpegThumbnail: hs.Sum(imgByte), // blm work
+			Url:           proto.String(uploadedImg.URL),
+			DirectPath:    proto.String(uploadedImg.DirectPath),
+			MediaKey:      uploadedImg.MediaKey,
 			Mimetype:      proto.String(http.DetectContentType(imgByte)),
-			FileEncSha256: uploadImg.FileEncSHA256,
-			FileSha256:    uploadImg.FileSHA256,
+			FileEncSha256: uploadedImg.FileEncSHA256,
+			FileSha256:    uploadedImg.FileSHA256,
 			FileLength:    proto.Uint64(uint64(len(imgByte))),
 		},
 	})
@@ -203,9 +209,11 @@ func (m *renz) SendImg(jid types.JID, value interface{}) {
 		return
 	}
 
-	if err := os.Remove(randomJpgImg); err != nil {
-		log.Println("Failed to remove temporary file:", err)
-		return
+	if _, ok := value.(string); ok {
+		if err := os.Remove(randomJpgImg); err != nil {
+			log.Println("Failed to remove temporary file:", err)
+			return
+		}
 	}
 
 }

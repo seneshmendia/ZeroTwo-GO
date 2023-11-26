@@ -183,7 +183,39 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			desc := strings.Join(split[1:], " ")
 			m.CreateChannel(title, desc)
 			break
+		case "add":
+			if !isGroup {
+				m.Reply("Bukan grup")
+				return
+			}
+			if !isAdmin {
+				m.Reply("Anda bukan admin grup ini")
+				return
+			}
+			if !isBotAdm {
+				m.Reply("Saya bukan admin grup ini")
+				return
+			}
+			if query == "" {
+				m.Reply("Empty number")
+				return
+			}
+			ok, err := sock.IsOnWhatsApp([]string{query})
 
+			if ok[0].IsIn {
+
+				_, err = sock.UpdateGroupParticipants(from, map[types.JID]waSocket.ParticipantChange{
+					ok[0].JID: waSocket.ParticipantChangeAdd,
+				})
+			}
+
+			if err != nil {
+				m.Reply("Error: " + err.Error())
+				return
+			}
+			m.Reply("Success add " + ok[0].JID.User)
+
+			break
 		case "kick":
 			if !isGroup {
 				m.Reply("Bukan grup")
@@ -197,25 +229,22 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				m.Reply("Saya bukan admin grup ini")
 				return
 			}
-			if m.Msg.Message.ExtendedTextMessage.ContextInfo.Participant != nil {
-				// m.Reply("Reply pesan anggota yang akan di kick")
-				// return
-
-				participant := m.Msg.Message.ExtendedTextMessage.ContextInfo.Participant
-				parse_participant, _ := types.ParseJID(*participant)
+			if m.Msg.Message.ExtendedTextMessage.ContextInfo.MentionedJid != nil {
+				participant := m.Msg.Message.ExtendedTextMessage.ContextInfo.MentionedJid[0]
+				parse_participant, _ := types.ParseJID(participant)
 
 				_, err := sock.UpdateGroupParticipants(from, map[types.JID]waSocket.ParticipantChange{
 					parse_participant: waSocket.ParticipantChangeRemove,
 				})
 
 				if err != nil {
-					m.Reply("Gabisa di tendang uy\nmenolak ilang dia")
+					m.Reply("Error: " + err.Error())
 					return
 				}
 
 				m.Reply("Sayonara")
 			} else {
-				m.Reply("Reply pesan anggota yang akan di kick")
+				m.Reply("Mention pesan anggota yang akan di kick")
 			}
 
 			break

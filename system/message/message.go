@@ -260,6 +260,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 						},
 					})
 					m.React("⚠️")
+					m.Reply("Nomor di private")
 				} else if item.Status == "409" {
 					log.Printf("\nParticipant already in group: %s %s %+v", item.Status, item.JID, item.Content)
 					m.React("❌")

@@ -3,7 +3,7 @@ module whatsapp-bot-go
 go 1.21.4
 
 require (
-	github.com/amiruldev20/waSocket v1.0.6
+	github.com/amiruldev20/waSocket v1.0.7
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.18
 	github.com/mdp/qrterminal v1.0.1

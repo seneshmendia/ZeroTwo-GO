@@ -209,9 +209,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			if len(ok) > 0 {
 				if ok[0].IsIn {
-					_, err = sock.UpdateGroupParticipants(from, map[types.JID]waSocket.ParticipantChange{
-						ok[0].JID: waSocket.ParticipantChangeAdd,
-					})
+					_, err = sock.UpdateGroupParticipants(from, []types.JID{ok[0].JID}, waSocket.ParticipantChangeAdd)
 
 					if err != nil {
 						m.Reply("Error adding participant: " + err.Error())
@@ -223,7 +221,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 					m.Reply("Participant not found on WhatsApp")
 				}
 			} else {
-				m.Reply("No results found")
+				// m.Reply("No results found")
 			}
 
 			break
@@ -245,9 +243,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				participant := m.Msg.Message.ExtendedTextMessage.ContextInfo.MentionedJid[0]
 				parse_participant, _ := types.ParseJID(participant)
 
-				_, err := sock.UpdateGroupParticipants(from, map[types.JID]waSocket.ParticipantChange{
-					parse_participant: waSocket.ParticipantChangeRemove,
-				})
+				_, err := sock.UpdateGroupParticipants(from, []types.JID{parse_participant}, waSocket.ParticipantChangeRemove)
 
 				if err != nil {
 					m.Reply("Error: " + err.Error())

@@ -220,6 +220,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			}
 
 			if !ok[0].IsIn {
+				m.React("❌")
 				m.Reply("Nomor tidak terdaftar di WhatsApp")
 				return
 			}
@@ -234,6 +235,9 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			for _, item := range res {
 				if item.Status == "403" {
 					info, _ := sock.GetGroupInfo(from)
+					pp, _ := sock.GetProfilePictureInfo(from, &waSocket.GetProfilePictureParams{
+						Preview: true,
+					})
 					exp, _ := strconv.ParseInt(item.Content.Attrs["expiration"].(string), 10, 64)
 					log.Printf("\nParticipant is private: %s %s %s %d", item.Status, item.JID, item.Content.Attrs["code"].(string), exp)
 					sock.SendMessage(context.TODO(), item.JID, &waProto.Message{
@@ -243,6 +247,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 							GroupJid:         proto.String(info.JID.String()),
 							GroupName:        proto.String(info.Name),
 							Caption:          proto.String(info.Topic),
+							JpegThumbnail:    []byte(pp.URL),
 						},
 					})
 					m.React("⚠️")
@@ -257,8 +262,6 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 					m.React("❌")
 				}
 			}
-
-			// m.Reply("Berhasil menambahkan " + ok[0].JID.User)
 
 			break
 
@@ -294,6 +297,11 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 				// m.Reply("Sayonara")
 			}
+			break
+		case "pp":
+			sock.GetProfilePictureInfo(from, &waSocket.GetProfilePictureParams{
+				Preview: true,
+			})
 			break
 		}
 	}

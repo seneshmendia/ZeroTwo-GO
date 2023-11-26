@@ -22,6 +22,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 	"whatsapp-bot-go/system/helpers"
 	"whatsapp-bot-go/system/lib"
 
@@ -95,7 +96,12 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			m.Reply("Bot Active")
 			break
 		case "ping":
-			m.Reply("Pong!")
+			now := time.Now()
+			msgDate := m.Msg.Info.Timestamp
+			diff := now.Unix() - msgDate.Unix()
+			ping := float64(diff) / float64(time.Second)
+			pingStr := fmt.Sprintf("%.3f", ping)
+			m.Reply(pingStr)
 			break
 		case "st":
 			if msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage != nil {

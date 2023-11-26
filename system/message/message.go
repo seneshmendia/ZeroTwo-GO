@@ -13,29 +13,32 @@ package message
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"image/jpeg"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"whatsapp-bot-go/system/helpers"
 	"whatsapp-bot-go/system/lib"
 
 	"github.com/amiruldev20/waSocket"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
 	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
+	"google.golang.org/protobuf/proto"
+
+	"github.com/joho/godotenv"
 	"github.com/nickalie/go-webpbin"
-	// "github.com/joho/godotenv"
-	// "github.com/nickalie/go-webpbin"
-	// "github.com/chai2010/webp"
 )
 
 func Msg(sock *waSocket.Client, msg *events.Message) {
 
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	panic("Error load file .env")
-	// }
+	err := godotenv.Load()
+	if err != nil {
+		panic("Error load file .env")
+	}
 
 	var (
 		prefix    = os.Getenv("BOT_PREFIX")
@@ -187,26 +190,28 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			break
 		case "add":
 			if !isGroup {
-				m.Reply("Bukan grup")
-				return
-			}
-			if !isAdmin {
-				m.Reply("Anda bukan admin grup ini")
-				return
-			}
-			if !isBotAdm {
-				m.Reply("Saya bukan admin grup ini")
+				m.Reply(helpers.NotGroup)
 				return
 			}
 			if query == "" {
 				m.Reply(fmt.Sprintf("Contoh penggunaan:\n%sadd 628xxxxx", prefix))
 				return
 			}
+			if !isBotAdm {
+				m.Reply(helpers.BotNotAdmin)
+				return
+			}
+			if !isAdmin {
+				m.Reply(helpers.NotAdmin)
+				return
+			}
+
+			m.React("⏱️")
+
 			ok, err := sock.IsOnWhatsApp([]string{query})
 
 			if err != nil {
 				log.Println("Error:", err)
-
 				return
 			}
 
@@ -219,11 +224,38 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				return
 			}
 
-			_, err = sock.UpdateGroupParticipants(from, []types.JID{ok[0].JID}, waSocket.ParticipantChangeAdd)
+			res, err := sock.UpdateGroupParticipants(from, []types.JID{ok[0].JID}, waSocket.ParticipantChangeAdd)
 
 			if err != nil {
 				log.Println("Error adding participant:", err)
 				return
+			}
+
+			for _, item := range res {
+				if item.Status == "403" {
+					info, _ := sock.GetGroupInfo(from)
+					exp, _ := strconv.ParseInt(item.Content.Attrs["expiration"].(string), 10, 64)
+					log.Printf("\nParticipant is private: %s %s %s %d", item.Status, item.JID, item.Content.Attrs["code"].(string), exp)
+					sock.SendMessage(context.TODO(), item.JID, &waProto.Message{
+						GroupInviteMessage: &waProto.GroupInviteMessage{
+							InviteCode:       proto.String(item.Content.Attrs["code"].(string)),
+							InviteExpiration: proto.Int64(exp),
+							GroupJid:         proto.String(info.JID.String()),
+							GroupName:        proto.String(info.Name),
+							Caption:          proto.String(info.Topic),
+						},
+					})
+					m.React("⚠️")
+				} else if item.Status == "409" {
+					log.Printf("\nParticipant already in group: %s %s %+v", item.Status, item.JID, item.Content)
+					m.React("❌")
+				} else if item.Status == "200" {
+					log.Printf("\nAdded participant: %s %s %+v", item.Status, item.JID, item.Content)
+					m.React("✅")
+				} else {
+					log.Printf("\nUnknown status: %s %s %+v", item.Status, item.JID, item.Content)
+					m.React("❌")
+				}
 			}
 
 			// m.Reply("Berhasil menambahkan " + ok[0].JID.User)
@@ -232,17 +264,22 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 		case "kick":
 			if !isGroup {
-				m.Reply("Bukan grup")
+				m.Reply(helpers.NotGroup)
 				return
 			}
-			if !isAdmin {
-				m.Reply("Anda bukan admin grup ini")
+			if query == "" {
+				m.Reply(fmt.Sprintf("Contoh penggunaan:\n%skick @mention", prefix))
 				return
 			}
 			if !isBotAdm {
-				m.Reply("Saya bukan admin grup ini")
+				m.Reply(helpers.BotNotAdmin)
 				return
 			}
+			if !isAdmin {
+				m.Reply(helpers.NotAdmin)
+				return
+			}
+			m.React("⏱️")
 			if m.Msg.Message.ExtendedTextMessage.ContextInfo.MentionedJid != nil {
 				participant := m.Msg.Message.ExtendedTextMessage.ContextInfo.MentionedJid[0]
 				parse_participant, _ := types.ParseJID(participant)
@@ -250,15 +287,13 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				_, err := sock.UpdateGroupParticipants(from, []types.JID{parse_participant}, waSocket.ParticipantChangeRemove)
 
 				if err != nil {
-					m.Reply("Error: " + err.Error())
+					log.Println("Error removing participant:", err)
 					return
 				}
+				m.React("✅")
 
-				m.Reply("Sayonara")
-			} else {
-				m.Reply("Mention pesan anggota yang akan di kick")
+				// m.Reply("Sayonara")
 			}
-
 			break
 		}
 	}

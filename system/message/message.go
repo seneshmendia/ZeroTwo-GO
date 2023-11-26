@@ -62,7 +62,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	//quotedSticker := quotedMsg.GetStickerMessage()
 
 	//-- CONSOLE LOG
-	fmt.Println(msg)
+	// fmt.Println(msg)
 	fmt.Println("\n===============================\nNAME: " + pushName + "\nJID: " + sender + "\nTYPE: " + msg.Info.Type + "\nMessage: " + m.GetCMD() + "")
 	//fmt.Println(m.Msg.Message.GetPollUpdateMessage().GetMetadata())
 
@@ -197,32 +197,34 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				return
 			}
 			if query == "" {
-				m.Reply("Empty number")
+				m.Reply(fmt.Sprintf("Contoh penggunaan:\n%sadd 628xxxxx", prefix))
 				return
 			}
 			ok, err := sock.IsOnWhatsApp([]string{query})
 
 			if err != nil {
-				m.Reply("Error: " + err.Error())
+				log.Println("Error:", err)
+
 				return
 			}
 
-			if len(ok) > 0 {
-				if ok[0].IsIn {
-					_, err = sock.UpdateGroupParticipants(from, []types.JID{ok[0].JID}, waSocket.ParticipantChangeAdd)
-
-					if err != nil {
-						m.Reply("Error adding participant: " + err.Error())
-						return
-					}
-
-					m.Reply("Success add " + ok[0].JID.User)
-				} else {
-					m.Reply("Participant not found on WhatsApp")
-				}
-			} else {
-				// m.Reply("No results found")
+			if len(ok) == 0 {
+				return
 			}
+
+			if !ok[0].IsIn {
+				m.Reply("Nomor tidak terdaftar di WhatsApp")
+				return
+			}
+
+			_, err = sock.UpdateGroupParticipants(from, []types.JID{ok[0].JID}, waSocket.ParticipantChangeAdd)
+
+			if err != nil {
+				log.Println("Error adding participant:", err)
+				return
+			}
+
+			// m.Reply("Berhasil menambahkan " + ok[0].JID.User)
 
 			break
 

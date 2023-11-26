@@ -16,7 +16,7 @@ import (
 	"context"
 	"fmt"
 	"image/jpeg"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -240,9 +240,13 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 					pp, _ := sock.GetProfilePictureInfo(from, &waSocket.GetProfilePictureParams{
 						Preview: true,
 					})
-					getimg, _ := http.Get(pp.URL)
+					getimg, err := http.Get(pp.URL)
+					if err != nil {
+						log.Println("Error getting the image:", err)
+						return
+					}
 					defer getimg.Body.Close()
-					imgByte, _ := ioutil.ReadAll(getimg.Body)
+					imgByte, _ := io.ReadAll(getimg.Body)
 					exp, _ := strconv.ParseInt(item.Content.Attrs["expiration"].(string), 10, 64)
 					log.Printf("\nParticipant is private: %s %s %s %d", item.Status, item.JID, item.Content.Attrs["code"].(string), exp)
 					sock.SendMessage(context.TODO(), item.JID, &waProto.Message{

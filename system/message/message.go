@@ -202,20 +202,32 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			}
 			ok, err := sock.IsOnWhatsApp([]string{query})
 
-			if ok[0].IsIn {
-
-				_, err = sock.UpdateGroupParticipants(from, map[types.JID]waSocket.ParticipantChange{
-					ok[0].JID: waSocket.ParticipantChangeAdd,
-				})
-			}
-
 			if err != nil {
 				m.Reply("Error: " + err.Error())
 				return
 			}
-			m.Reply("Success add " + ok[0].JID.User)
+
+			if len(ok) > 0 {
+				if ok[0].IsIn {
+					_, err = sock.UpdateGroupParticipants(from, map[types.JID]waSocket.ParticipantChange{
+						ok[0].JID: waSocket.ParticipantChangeAdd,
+					})
+
+					if err != nil {
+						m.Reply("Error adding participant: " + err.Error())
+						return
+					}
+
+					m.Reply("Success add " + ok[0].JID.User)
+				} else {
+					m.Reply("Participant not found on WhatsApp")
+				}
+			} else {
+				m.Reply("No results found")
+			}
 
 			break
+
 		case "kick":
 			if !isGroup {
 				m.Reply("Bukan grup")

@@ -28,6 +28,7 @@ require (
 	go.mau.fi/libsignal v0.1.0 // indirect
 	go.mau.fi/util v0.2.1 // indirect
 	golang.org/x/crypto v0.15.0 // indirect
+	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/net v0.18.0 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )

@@ -16,7 +16,9 @@ import (
 	"context"
 	"fmt"
 	"image/jpeg"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -238,6 +240,9 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 					pp, _ := sock.GetProfilePictureInfo(from, &waSocket.GetProfilePictureParams{
 						Preview: true,
 					})
+					getimg, _ := http.Get(pp.URL)
+					defer getimg.Body.Close()
+					imgByte, _ := ioutil.ReadAll(getimg.Body)
 					exp, _ := strconv.ParseInt(item.Content.Attrs["expiration"].(string), 10, 64)
 					log.Printf("\nParticipant is private: %s %s %s %d", item.Status, item.JID, item.Content.Attrs["code"].(string), exp)
 					sock.SendMessage(context.TODO(), item.JID, &waProto.Message{
@@ -247,7 +252,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 							GroupJid:         proto.String(info.JID.String()),
 							GroupName:        proto.String(info.Name),
 							Caption:          proto.String(info.Topic),
-							JpegThumbnail:    []byte(pp.URL),
+							JpegThumbnail:    imgByte,
 						},
 					})
 					m.React("⚠️")

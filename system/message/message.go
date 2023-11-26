@@ -94,15 +94,14 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 		switch command {
 		case "bot":
-			m.Reply("Bot Active")
+			m.Reply("Bot Active " + m.Msg.Info.PushName)
 			break
 		case "ping":
 			now := time.Now()
 			mdate := time.Unix(m.Msg.Info.Timestamp.Unix(), 0)
 			mtime := now.Sub(mdate)
 			ms := mtime.Seconds()
-
-			pingStr := fmt.Sprintf("Pong! %.3f's", ms)
+			pingStr := fmt.Sprintf("Pong!\n%.3f seconds", ms)
 			m.Reply(pingStr)
 			break
 		case "st":

@@ -1,6 +1,8 @@
 package lib
 
 import (
+	"encoding/json"
+	"log"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -46,4 +48,21 @@ func IsValidImageURL(url string) bool {
 
 	// Content-Type bukan gambar
 	return false
+}
+
+func ReqGet(url string, data interface{}) (err error) {
+	res, err := http.Get(url)
+	if err != nil {
+		log.Println("Error making the request:", err)
+		return err
+	}
+	defer res.Body.Close()
+
+	err = json.NewDecoder(res.Body).Decode(data)
+	if err != nil {
+		log.Println("Error decoding JSON:", err)
+		return err
+	}
+	return nil
+
 }

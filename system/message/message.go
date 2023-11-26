@@ -14,7 +14,6 @@ package message
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"image/jpeg"
 	"io"
@@ -324,17 +323,10 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			m.React("⏱️")
 
 			apiUrl := "https://vihangayt.me/tools/chatgptv4?q=" + query
-			res, err := http.Get(apiUrl)
-			if err != nil {
-				log.Println("Error making the request:", err)
-				m.React("❌")
-				return
-			}
-			defer res.Body.Close()
 
-			err = json.NewDecoder(res.Body).Decode(&data)
+			err := lib.ReqGet(apiUrl, &data)
 			if err != nil {
-				log.Println("Error decoding JSON:", err)
+				m.Reply("Error: " + err.Error())
 				m.React("❌")
 				return
 			}

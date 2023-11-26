@@ -14,6 +14,7 @@ package message
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"image/jpeg"
 	"io"
@@ -305,13 +306,42 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				}
 				m.React("✅")
 
-				// m.Reply("Sayonara")
 			}
 			break
-		case "pp":
-			sock.GetProfilePictureInfo(from, &waSocket.GetProfilePictureParams{
-				Preview: true,
-			})
+		case "ai":
+			if query == "" {
+				m.Reply("Masukkan pertanyaanmu")
+				return
+			}
+
+			type Data struct {
+				Status bool   `json:"status"`
+				Data   string `json:"data"`
+			}
+
+			data := Data{}
+
+			m.React("⏱️")
+
+			apiUrl := "https://vihangayt.me/tools/chatgptv4?q="
+			res, err := http.Get(apiUrl)
+			if err != nil {
+				log.Println("Error making the request:", err)
+				m.React("❌")
+				return
+			}
+			defer res.Body.Close()
+
+			err = json.NewDecoder(res.Body).Decode(&data)
+			if err != nil {
+				log.Println("Error decoding JSON:", err)
+				m.React("❌")
+				return
+			}
+
+			m.Reply(data.Data)
+			m.React("✅")
+
 			break
 		}
 	}

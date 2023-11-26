@@ -102,7 +102,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			mtime := now.Sub(mdate)
 			ms := mtime.Seconds()
 
-			pingStr := fmt.Sprintf("%.3f", ms)
+			pingStr := fmt.Sprintf("Pong! %.3f's", ms)
 			m.Reply(pingStr)
 			break
 		case "st":

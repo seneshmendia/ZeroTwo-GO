@@ -323,7 +323,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			m.React("⏱️")
 
-			apiUrl := "https://vihangayt.me/tools/chatgptv4?q="
+			apiUrl := "https://vihangayt.me/tools/chatgptv4?q=" + query
 			res, err := http.Get(apiUrl)
 			if err != nil {
 				log.Println("Error making the request:", err)

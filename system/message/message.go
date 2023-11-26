@@ -66,15 +66,24 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	fmt.Println("\n===============================\nNAME: " + pushName + "\nJID: " + sender + "\nTYPE: " + msg.Info.Type + "\nMessage: " + m.GetCMD() + "")
 	//fmt.Println(m.Msg.Message.GetPollUpdateMessage().GetMetadata())
 
+	if self && !isOwner {
+		return
+	}
+
+	if !strings.HasPrefix(args[0], prefix) {
+		command := strings.ToLower(args[0])
+
+		switch command {
+		//
+		}
+	}
+
 	// response command if chat with prefix
 	if strings.HasPrefix(args[0], prefix) {
 		command := strings.ToLower(args[0])
 		command = strings.Split(command, prefix)[1]
 
 		// Self
-		if self && !isOwner {
-			return
-		}
 
 		switch command {
 		case "bot":
@@ -163,14 +172,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			m.SendImg(from, query)
 			break
-		case "sendimgc":
-			if query == "" {
-				m.Reply("Url cannot empty")
-				return
-			}
-			m.SendMsg(types.NewJID("120363199707822790", "newsletter"), "Send img tes")
-			m.SendImg(types.NewJID("120363199707822790", "newsletter"), query)
-			break
+
 			//command create channel
 			// jangan brutal ntar turu nangid :'(
 		case "nc":

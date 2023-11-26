@@ -19,6 +19,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -328,9 +329,20 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			m.React("⏱️")
 
-			apiUrl := "https://vihangayt.me/tools/chatgptv4?q=" + query
+			apiUrl := "https://vihangayt.me/tools/chatgptv4"
+			params := url.Values{}
+			params.Add("q", query)
 
-			err := lib.ReqGet(apiUrl, &data)
+			// Membuat URL dengan query parameters
+			fullURL, err := url.ParseRequestURI(apiUrl)
+			if err != nil {
+				log.Println("Error parsing URL:", err)
+				m.React("❌")
+				return
+			}
+			fullURL.RawQuery = params.Encode()
+
+			err = lib.ReqGet(fullURL.String(), &data)
 			if err != nil {
 				m.Reply("Error: " + err.Error())
 				m.React("❌")

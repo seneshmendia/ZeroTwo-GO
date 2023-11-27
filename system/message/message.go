@@ -75,8 +75,11 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	fmt.Println("\n===============================\nNAME: " + pushName + "\nJID: " + sender + "\nTYPE: " + msg.Info.Type + "\nMessage: " + m.GetCMD() + "")
 	//fmt.Println(m.Msg.Message.GetPollUpdateMessage().GetMetadata())
 
-	// Self
+	if strings.HasPrefix(msg.Info.ID, "BAE5") {
+		return
+	}
 
+	// Self
 	if self && !isOwner {
 		return
 	}
@@ -98,6 +101,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 		command = strings.Split(command, prefix)[1]
 
 		switch command {
+
 		case "ping":
 			now := time.Now()
 			mdate := time.Unix(m.Msg.Info.Timestamp.Unix(), 0)

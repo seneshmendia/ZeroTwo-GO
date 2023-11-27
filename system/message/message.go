@@ -75,10 +75,6 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	fmt.Println("\n===============================\nNAME: " + pushName + "\nJID: " + sender + "\nTYPE: " + msg.Info.Type + "\nMessage: " + m.GetCMD() + "")
 	//fmt.Println(m.Msg.Message.GetPollUpdateMessage().GetMetadata())
 
-	if strings.HasPrefix(msg.Info.ID, "BAE5") {
-		return
-	}
-
 	// Self
 	if self && !isOwner {
 		return

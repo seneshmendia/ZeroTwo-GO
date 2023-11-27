@@ -85,8 +85,11 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 		command := strings.ToLower(args[0])
 
 		switch command {
-		//
+		case "bot":
+			m.Reply("Bot Active " + m.Msg.Info.PushName)
+			break
 		}
+		return
 	}
 
 	// response command if chat with prefix
@@ -95,9 +98,6 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 		command = strings.Split(command, prefix)[1]
 
 		switch command {
-		case "bot":
-			m.Reply("Bot Active " + m.Msg.Info.PushName)
-			break
 		case "ping":
 			now := time.Now()
 			mdate := time.Unix(m.Msg.Info.Timestamp.Unix(), 0)
@@ -178,15 +178,6 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				err = os.Remove(randomWebpImg)
 			}
 			break
-		case "sendimg":
-			if query == "" {
-				m.Reply("Url cannot empty")
-				return
-			}
-
-			m.SendImg(from, query)
-			break
-
 			//command create channel
 			// jangan brutal ntar turu nangid :'(
 		case "nc":
@@ -200,8 +191,8 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			m.CreateChannel(title, desc)
 			break
 
+			// delete message
 		case "del":
-
 			if isGroup {
 				if !isBotAdm {
 					m.Reply(helpers.BotNotAdmin)
@@ -219,10 +210,8 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 					participant, _ := types.ParseJID(*ctx.Participant)
 					parse_bot_number, _ := types.ParseJID(bot)
 					if participant == parse_bot_number {
-						fmt.Println("Pesan bot")
 						target = types.EmptyJID
 					} else {
-						fmt.Println("Pesan user")
 						target = participant
 					}
 
@@ -395,5 +384,6 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			break
 		}
 	}
+	return
 
 }

@@ -71,7 +71,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	//quotedSticker := quotedMsg.GetStickerMessage()
 
 	//-- CONSOLE LOG
-	fmt.Println(msg)
+	// fmt.Println(msg)
 	fmt.Println("\n===============================\nNAME: " + pushName + "\nJID: " + sender + "\nTYPE: " + msg.Info.Type + "\nMessage: " + m.GetCMD() + "")
 	//fmt.Println(m.Msg.Message.GetPollUpdateMessage().GetMetadata())
 

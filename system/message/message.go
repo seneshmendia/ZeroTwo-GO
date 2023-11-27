@@ -47,7 +47,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	var (
 		prefix    = os.Getenv("BOT_PREFIX")
 		self, _   = strconv.ParseBool(strings.ToLower(os.Getenv("BOT_SELF")))
-		owner     = os.Getenv("OWNER_NUMBER")
+		owners    = os.Getenv("OWNER_NUMBERS")
 		botNumber = os.Getenv("BOT_NUMBER")
 	)
 
@@ -57,14 +57,29 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	sender := msg.Info.Sender.String()
 	pushName := msg.Info.PushName
 	bot := botNumber + "@s.whatsapp.net"
-	isOwner := strings.Contains(sender, owner)
+
+	var checkOwner bool
+	// using map to not iterate manually like arrays
+	if strings.Contains(owners, ",") {
+		splitOwners := strings.Split(owners, ",")
+		ownerMap := make(map[string]string)
+		for _, v := range splitOwners {
+			ownerMap[v] = v
+		}
+
+		checkOwner = strings.Contains(ownerMap[msg.Info.Sender.User], msg.Info.Sender.User)
+	} else {
+		checkOwner = strings.Contains(sender, owners)
+	}
+
+	isOwner := checkOwner
 	isAdmin := m.GetGroupAdmin(from, sender)
 	isBotAdm := m.GetGroupAdmin(from, bot)
 	isGroup := msg.Info.IsGroup
 	args := strings.Split(m.GetCMD(), " ")
 	query := strings.Join(args[1:], ` `)
-	// extended := msg.Message.GetExtendedTextMessage()
-	// contextInfo := extended.GetContextInfo()
+	extended := msg.Message.GetExtendedTextMessage()
+	contextInfo := extended.GetContextInfo()
 	// quotedMsg := extended.GetContextInfo().GetQuotedMessage()
 	//quotedImage := quotedMsg.GetImageMessage()
 	//quotedVideo := quotedMsg.GetVideoMessage()
@@ -97,7 +112,6 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 		command = strings.Split(command, prefix)[1]
 
 		switch command {
-
 		case "ping":
 			now := time.Now()
 			mdate := time.Unix(m.Msg.Info.Timestamp.Unix(), 0)
@@ -182,7 +196,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			// jangan brutal ntar turu nangid :'(
 		case "nc":
 			if !isOwner {
-				m.Reply("Hanya owner bot")
+				m.Reply(helpers.NotOwner)
 				return
 			}
 			split := strings.Split(query, "|")
@@ -203,11 +217,12 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 					return
 				}
 
-				if m.Msg.Message.ExtendedTextMessage.ContextInfo.Participant != nil {
+				if contextInfo.GetParticipant() != "" {
+					m.React(helpers.Wait)
 					var target types.JID
-					ctx := m.Msg.Message.ExtendedTextMessage.ContextInfo
-					stanza := ctx.StanzaId
-					participant, _ := types.ParseJID(*ctx.Participant)
+					ctx := contextInfo
+					stanza := ctx.GetStanzaId()
+					participant, _ := types.ParseJID(ctx.GetParticipant())
 					parse_bot_number, _ := types.ParseJID(bot)
 					if participant == parse_bot_number {
 						target = types.EmptyJID
@@ -215,12 +230,13 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 						target = participant
 					}
 
-					_, err := sock.SendMessage(context.Background(), from, sock.BuildRevoke(from, target, *stanza))
+					_, err := sock.SendMessage(context.Background(), from, sock.BuildRevoke(from, target, stanza))
 					if err != nil {
 						log.Println(err)
+						m.React(helpers.Failed)
 						return
 					}
-					// log.Println(res)
+					m.React(helpers.Success)
 				}
 			}
 
@@ -232,7 +248,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				return
 			}
 			if query == "" {
-				m.Reply(fmt.Sprintf("Contoh penggunaan:\n%sadd 628xxxxx", prefix))
+				m.Reply(helpers.ExampleUse(prefix, "add 628xxxx"))
 				return
 			}
 			if !isBotAdm {
@@ -244,7 +260,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				return
 			}
 
-			m.React("⏱️")
+			m.React(helpers.Wait)
 
 			ok, err := sock.IsOnWhatsApp([]string{query})
 
@@ -258,8 +274,8 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			}
 
 			if !ok[0].IsIn {
-				m.React("❌")
-				m.Reply("Nomor tidak terdaftar di WhatsApp")
+				m.React(helpers.Failed)
+				m.Reply(helpers.NotRegisteredNum)
 				return
 			}
 
@@ -295,17 +311,17 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 							JpegThumbnail:    imgByte,
 						},
 					})
-					m.React("⚠️")
+					m.React(helpers.Warning)
 					m.Reply("Nomor di private")
 				} else if item.Status == "409" {
 					log.Printf("\nParticipant already in group: %s %s %+v", item.Status, item.JID, item.Content)
-					m.React("❌")
+					m.React(helpers.Failed)
 				} else if item.Status == "200" {
 					log.Printf("\nAdded participant: %s %s %+v", item.Status, item.JID, item.Content)
-					m.React("✅")
+					m.React(helpers.Success)
 				} else {
 					log.Printf("\nUnknown status: %s %s %+v", item.Status, item.JID, item.Content)
-					m.React("❌")
+					m.React(helpers.Failed)
 				}
 			}
 
@@ -317,7 +333,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				return
 			}
 			if query == "" {
-				m.Reply(fmt.Sprintf("Contoh penggunaan:\n%skick @mention", prefix))
+				m.Reply(helpers.ExampleUse(prefix, "kick @mention"))
 				return
 			}
 			if !isBotAdm {
@@ -328,7 +344,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				m.Reply(helpers.NotAdmin)
 				return
 			}
-			m.React("⏱️")
+			m.React(helpers.Wait)
 			if m.Msg.Message.ExtendedTextMessage.ContextInfo.MentionedJid != nil {
 				participant := m.Msg.Message.ExtendedTextMessage.ContextInfo.MentionedJid[0]
 				parse_participant, _ := types.ParseJID(participant)
@@ -339,13 +355,13 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 					log.Println("Error removing participant:", err)
 					return
 				}
-				m.React("✅")
+				m.React(helpers.Success)
 
 			}
 			break
 		case "ai":
 			if query == "" {
-				m.Reply("Masukkan pertanyaanmu")
+				m.Reply(helpers.InputQuery)
 				return
 			}
 
@@ -356,7 +372,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			data := Data{}
 
-			m.React("⏱️")
+			m.React(helpers.Wait)
 
 			apiUrl := "https://vihangayt.me/tools/chatgptv4"
 			params := url.Values{}
@@ -366,7 +382,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			fullURL, err := url.ParseRequestURI(apiUrl)
 			if err != nil {
 				log.Println("Error parsing URL:", err)
-				m.React("❌")
+				m.React(helpers.Failed)
 				return
 			}
 			fullURL.RawQuery = params.Encode()
@@ -374,12 +390,12 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			err = lib.ReqGet(fullURL.String(), &data)
 			if err != nil {
 				m.Reply("Error: " + err.Error())
-				m.React("❌")
+				m.React(helpers.Failed)
 				return
 			}
 
 			m.Reply(data.Data)
-			m.React("✅")
+			m.React(helpers.Success)
 
 			break
 		}

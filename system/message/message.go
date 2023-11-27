@@ -73,6 +73,8 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	fmt.Println("\n===============================\nNAME: " + pushName + "\nJID: " + sender + "\nTYPE: " + msg.Info.Type + "\nMessage: " + m.GetCMD() + "")
 	//fmt.Println(m.Msg.Message.GetPollUpdateMessage().GetMetadata())
 
+	// Self
+
 	if self && !isOwner {
 		return
 	}
@@ -89,8 +91,6 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	if strings.HasPrefix(args[0], prefix) {
 		command := strings.ToLower(args[0])
 		command = strings.Split(command, prefix)[1]
-
-		// Self
 
 		switch command {
 		case "bot":
@@ -197,6 +197,8 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			desc := strings.Join(split[1:], " ")
 			m.CreateChannel(title, desc)
 			break
+
+			// group command
 		case "add":
 			if !isGroup {
 				m.Reply(helpers.NotGroup)

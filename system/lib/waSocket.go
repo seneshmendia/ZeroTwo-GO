@@ -291,17 +291,6 @@ func (m *renz) SendContact(jid types.JID, number string, nama string) {
 }
 
 /* create channel */
-// func (m *renz) createChannel(params []string) {
-// 	_,
-// 		err := m.sock.CreateNewsletter(waSocket.CreateNewsletterParams{
-// 		Name: strings.Join(params, " "),
-// 	})
-// 	if err != nil {
-// 		return
-// 	}
-// }
-
-/* create channel */
 func (m *renz) CreateChannel(title, description string) {
 	metadata,
 		err := m.sock.CreateNewsletter(waSocket.CreateNewsletterParams{

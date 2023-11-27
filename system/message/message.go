@@ -56,20 +56,22 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 	from := msg.Info.Chat
 	sender := msg.Info.Sender.String()
 	pushName := msg.Info.PushName
+	bot := botNumber + "@s.whatsapp.net"
 	isOwner := strings.Contains(sender, owner)
 	isAdmin := m.GetGroupAdmin(from, sender)
-	isBotAdm := m.GetGroupAdmin(from, botNumber+"@s.whatsapp.net")
+	isBotAdm := m.GetGroupAdmin(from, bot)
 	isGroup := msg.Info.IsGroup
 	args := strings.Split(m.GetCMD(), " ")
 	query := strings.Join(args[1:], ` `)
-	//extended := msg.Message.GetExtendedTextMessage()
-	//quotedMsg := extended.GetContextInfo().GetQuotedMessage()
+	// extended := msg.Message.GetExtendedTextMessage()
+	// contextInfo := extended.GetContextInfo()
+	// quotedMsg := extended.GetContextInfo().GetQuotedMessage()
 	//quotedImage := quotedMsg.GetImageMessage()
 	//quotedVideo := quotedMsg.GetVideoMessage()
 	//quotedSticker := quotedMsg.GetStickerMessage()
 
 	//-- CONSOLE LOG
-	// fmt.Println(msg)
+	fmt.Println(msg)
 	fmt.Println("\n===============================\nNAME: " + pushName + "\nJID: " + sender + "\nTYPE: " + msg.Info.Type + "\nMessage: " + m.GetCMD() + "")
 	//fmt.Println(m.Msg.Message.GetPollUpdateMessage().GetMetadata())
 
@@ -198,6 +200,42 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			m.CreateChannel(title, desc)
 			break
 
+		case "del":
+
+			if isGroup {
+				if !isBotAdm {
+					m.Reply(helpers.BotNotAdmin)
+					return
+				}
+				if !isAdmin {
+					m.Reply(helpers.NotAdmin)
+					return
+				}
+
+				if m.Msg.Message.ExtendedTextMessage.ContextInfo.Participant != nil {
+					var target types.JID
+					ctx := m.Msg.Message.ExtendedTextMessage.ContextInfo
+					stanza := ctx.StanzaId
+					participant, _ := types.ParseJID(*ctx.Participant)
+					parse_bot_number, _ := types.ParseJID(bot)
+					if participant == parse_bot_number {
+						fmt.Println("Pesan bot")
+						target = types.EmptyJID
+					} else {
+						fmt.Println("Pesan user")
+						target = participant
+					}
+
+					_, err := sock.SendMessage(context.Background(), from, sock.BuildRevoke(from, target, *stanza))
+					if err != nil {
+						log.Println(err)
+						return
+					}
+					// log.Println(res)
+				}
+			}
+
+			break
 			// group command
 		case "add":
 			if !isGroup {

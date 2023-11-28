@@ -207,37 +207,39 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			// delete message
 		case "del":
-			if isGroup {
-				if !isBotAdm {
-					m.Reply(helpers.BotNotAdmin)
-					return
-				}
-				if !isAdmin {
-					m.Reply(helpers.NotAdmin)
-					return
-				}
-
+			if !isGroup {
 				if contextInfo.GetParticipant() != "" {
-					m.React(helpers.Wait)
-					var target types.JID
 					ctx := contextInfo
 					stanza := ctx.GetStanzaId()
-					participant, _ := types.ParseJID(ctx.GetParticipant())
-					parse_bot_number, _ := types.ParseJID(bot)
-					if participant == parse_bot_number {
-						target = types.EmptyJID
-					} else {
-						target = participant
-					}
 
-					_, err := sock.SendMessage(context.Background(), from, sock.BuildRevoke(from, target, stanza))
-					if err != nil {
-						log.Println(err)
-						m.React(helpers.Failed)
-						return
-					}
-					m.React(helpers.Success)
+					m.DeleteMsg(from, types.EmptyJID, stanza)
 				}
+				return
+			}
+
+			if !isBotAdm {
+				m.Reply(helpers.BotNotAdmin)
+				return
+			}
+			if !isAdmin {
+				m.Reply(helpers.NotAdmin)
+				return
+			}
+
+			if contextInfo.GetParticipant() != "" {
+				var target types.JID
+				ctx := contextInfo
+				stanza := ctx.GetStanzaId()
+				participant, _ := types.ParseJID(ctx.GetParticipant())
+				parse_bot_number, _ := types.ParseJID(bot)
+				if participant == parse_bot_number {
+					target = types.EmptyJID
+				} else {
+					target = participant
+				}
+
+				m.DeleteMsg(from, target, stanza)
+
 			}
 
 			break

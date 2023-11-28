@@ -15,11 +15,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"net/url"
-	"os"
 	"strings"
 	"whatsapp-bot-go/system/dto"
 
@@ -133,56 +130,9 @@ func (m *renz) SendSticker(jid types.JID, data []byte, extra ...dto.ExtraSend) {
 }
 
 /* send image */
-func (m *renz) SendImg(jid types.JID, value interface{}) {
-	var uploadedImg waSocket.UploadResponse
-	var imgByte []byte
-	randomJpgImg := "./temp/" + GenerateRandomString(5) + ".jpg"
+func (m *renz) SendImg(jid types.JID, data []byte) {
 
-	if dataUrl, ok := value.(string); ok {
-		_, err := url.ParseRequestURI(dataUrl)
-		if err != nil {
-			log.Println("Invalid url")
-			return
-		}
-
-		if !IsValidImageURL(dataUrl) {
-			log.Println("Invalid image url")
-			return
-		}
-
-		res, err := http.Get(dataUrl)
-		if err != nil {
-			log.Println("Failed to fetch image:", err)
-			return
-		}
-		defer res.Body.Close() // Pastikan menutup body setelah selesai
-
-		file, err := os.Create(randomJpgImg)
-		if err != nil {
-			log.Println("Failed to create file:", err)
-			return
-		}
-		defer file.Close()
-
-		_, err = io.Copy(file, res.Body)
-		if err != nil {
-			log.Println("Failed to copy image:", err)
-			return
-		}
-
-		imgByte, err = os.ReadFile(file.Name())
-		if err != nil {
-			log.Println("Cannot read file image:", err)
-			return
-		}
-
-	}
-
-	if dataByte, ok := value.([]byte); ok {
-		imgByte = dataByte
-	}
-
-	uploadedImg, err := m.sock.Upload(context.Background(), imgByte, waSocket.MediaImage)
+	uploadedImg, err := m.sock.Upload(context.Background(), data, waSocket.MediaImage)
 
 	if err != nil {
 		log.Println("Failed to upload file:", err)
@@ -193,14 +143,14 @@ func (m *renz) SendImg(jid types.JID, value interface{}) {
 	// hs.Write(imgByte)
 	_, err = m.sock.SendMessage(context.Background(), m.Msg.Info.Chat, &waProto.Message{
 		ImageMessage: &waProto.ImageMessage{
-			JpegThumbnail: hs.Sum(imgByte), // blm work
+			JpegThumbnail: hs.Sum(data), // blm work
 			Url:           proto.String(uploadedImg.URL),
 			DirectPath:    proto.String(uploadedImg.DirectPath),
 			MediaKey:      uploadedImg.MediaKey,
-			Mimetype:      proto.String(http.DetectContentType(imgByte)),
+			Mimetype:      proto.String(http.DetectContentType(data)),
 			FileEncSha256: uploadedImg.FileEncSHA256,
 			FileSha256:    uploadedImg.FileSHA256,
-			FileLength:    proto.Uint64(uint64(len(imgByte))),
+			FileLength:    proto.Uint64(uint64(len(data))),
 		},
 	})
 
@@ -209,13 +159,21 @@ func (m *renz) SendImg(jid types.JID, value interface{}) {
 		return
 	}
 
-	if _, ok := value.(string); ok {
-		if err := os.Remove(randomJpgImg); err != nil {
-			log.Println("Failed to remove temporary file:", err)
-			return
-		}
-	}
+}
 
+/* delete message */
+
+// To delete someone else's message in the group, fill the sender parameter with the participant ID.
+//
+// If you want to delete your own messages, fill in the sender parameter with types.EmptyJID.
+//
+// MessageID parameter can be filled with stanzaId
+func (m *renz) DeleteMsg(chat types.JID, sender types.JID, messageID string) {
+	_, err := m.sock.SendMessage(context.Background(), chat, m.sock.BuildRevoke(chat, sender, messageID))
+	if err != nil {
+		log.Println("Error deleting message:", err)
+		return
+	}
 }
 
 /* send reply */

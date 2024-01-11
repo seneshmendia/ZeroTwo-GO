@@ -1,13 +1,11 @@
 /*
 ###################################
-# Name: Mywa BOT                  #
-# Version: 1.0.1                  #
-# Developer: Amirul Dev           #
+# Name: ZeroTwoGo                 #
+# Version: Beta                   #
+# Developer: VihangaYT            #
 # Library: waSocket               #
-# Contact: 085157489446           #
+# Contact: xxxxxxxxx              #
 ###################################
-# Thanks to:
-# Vnia
 */
 package lib
 

@@ -1,3 +1,12 @@
+/*
+###################################
+# Name: ZeroTwoGo                 #
+# Version: Beta                   #
+# Developer: VihangaYT            #
+# Library: waSocket               #
+# Contact: xxxxxxxxx              #
+###################################
+*/
 package lib
 
 import (

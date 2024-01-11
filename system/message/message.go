@@ -122,7 +122,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			if msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage != nil {
 				quoted := msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage
 				if quoted.ImageMessage == nil {
-					m.Reply("Reply gambar lalu ketik /st")
+					m.Reply("Please reply to a image !!")
 					return
 				}
 
@@ -360,14 +360,19 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			m.React(helpers.Wait)
 
-			apiUrl := "https://vihangayt.me/tools/chatgptv4"
+			apiUrl := "https://vihangayt.me/tools/chatgpt"
 			params := url.Values{}
 			params.Add("q", query)
 
 			// Membuat URL dengan query parameters
 			fullURL, err := url.ParseRequestURI(apiUrl)
 			if err != nil {
-				log.Println("Error parsing URL:", err)
+				m.Reply("Error parsing URL:", err)
+				m.React(helpers.Failed)
+				return
+			}
+			if data.data != nil {
+				m.Reply("Request Fail !!")
 				m.React(helpers.Failed)
 				return
 			}
@@ -380,7 +385,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				return
 			}
 
-			m.Reply(data.Data)
+			m.Reply(data.data)
 			m.React(helpers.Success)
 
 			break

@@ -110,6 +110,23 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 		command = strings.Split(command, prefix)[1]
 
 		switch command {
+		case "menu":
+			m.Reply(`*Hello `+ m.Msg.Info.PushName +` 👋*
+
+*ZeroTwo-GO Whatsapp Bot 👾*
+
+
+*🤖 Ai Commands 🚪*
+
+*⛩️Command:* .gpt
+*🍜Desc:* Chat With ChatGpt
+
+*⛩️Command:* .blackbox
+*🍜Desc:* Chat With BlackBox
+
+*⛩️Command:* .bard
+*🍜Desc:* Chat With GoogleBard`)
+	    break
 		case "ping":
 			now := time.Now()
 			mdate := time.Unix(m.Msg.Info.Timestamp.Unix(), 0)

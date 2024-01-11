@@ -371,7 +371,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				m.React(helpers.Failed)
 				return
 			}
-			dataai = data.data
+			dataai = data.Data
 			if dataai != nil {
 				m.Reply("Request Fail !!")
 				m.React(helpers.Failed)
@@ -386,7 +386,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				return
 			}
 
-			m.Reply(data.data)
+			m.Reply(data.Data)
 			m.React(helpers.Success)
 
 			break

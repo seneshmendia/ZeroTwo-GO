@@ -367,7 +367,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			// Membuat URL dengan query parameters
 			fullURL, err := url.ParseRequestURI(apiUrl)
 			if err != nil {
-				m.Reply("Error parsing URL:", err)
+				log.Println("Error parsing URL:", err)
 				m.React(helpers.Failed)
 				return
 			}

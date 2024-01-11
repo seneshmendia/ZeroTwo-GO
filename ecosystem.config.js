@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: "your-go-app",
-      script: "./path/to/your/go/app",
+      name: "ZeroTwoGo",
+      script: "./main.go",
       watch: true,
       ignore_watch: ["node_modules", "logs"],
     },

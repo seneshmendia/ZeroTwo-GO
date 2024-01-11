@@ -345,7 +345,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			}
 			break
-		case "ai":
+		case "ai":, case "gpt":, case "chatgpt":
 			if query == "" {
 				m.Reply(helpers.InputQuery)
 				return
@@ -385,7 +385,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			break
 
-		case "ai2": case "blackbox":
+		case "ai2":, case "blackbox":, case "bb":
 			if query == "" {
 				m.Reply(helpers.InputQuery)
 				return
@@ -401,6 +401,44 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			m.React(helpers.Wait)
 
 			apiUrl := "https://vihangayt.me/tools/blackbox"
+			params := url.Values{}
+			params.Add("q", query)
+
+			// Membuat URL dengan query parameters
+			fullURL, err := url.ParseRequestURI(apiUrl)
+			if err != nil {
+				log.Println("Error parsing URL:", err)
+				m.React(helpers.Failed)
+				return
+			}
+			fullURL.RawQuery = params.Encode()
+
+			err = lib.ReqGet(fullURL.String(), &data)
+			if err != nil {
+				m.Reply("Error: " + err.Error())
+				m.React(helpers.Failed)
+				return
+			}
+
+			m.Reply(data.Data)
+			m.React(helpers.Success)
+			break
+		case "ai3":, case "bard":, case "gbard":
+			if query == "" {
+				m.Reply(helpers.InputQuery)
+				return
+			}
+
+			type Data struct {
+				Status bool   `json:"status"`
+				Data   string `json:"data"`
+			}
+
+			data := Data{}
+
+			m.React(helpers.Wait)
+
+			apiUrl := "https://vihangayt.me/tools/bard"
 			params := url.Values{}
 			params.Add("q", query)
 

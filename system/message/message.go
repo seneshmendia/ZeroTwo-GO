@@ -371,7 +371,8 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				m.React(helpers.Failed)
 				return
 			}
-			if data.data != nil {
+			dataai = data.data
+			if dataai != nil {
 				m.Reply("Request Fail !!")
 				m.React(helpers.Failed)
 				return

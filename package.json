@@ -1,0 +1,8 @@
+{
+    "scripts": {
+      "start": "pm2 start 'go run main.go' --deep-monitoring --attach --name zerotwogo",
+      "stop": "pm2 stop zerotwogo && pm2 delete zerotwogo",
+      "restart": "git pull && npm stop && npm start",
+      "stash": "git stash && git stash drop"
+    }
+  }

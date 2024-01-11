@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "ZeroTwoGo",
-      script: "./main.go",
+      script: "./",
       watch: true,
       ignore_watch: ["node_modules", "logs"],
     },

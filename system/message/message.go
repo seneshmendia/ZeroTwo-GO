@@ -345,7 +345,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			}
 			break
-		case "ai":, case "gpt":, case "chatgpt":
+		case "ai", case "gpt", case "chatgpt":
 			if query == "" {
 				m.Reply(helpers.InputQuery)
 				return
@@ -385,7 +385,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			break
 
-		case "ai2":, case "blackbox":, case "bb":
+		case "ai2", case "blackbox", case "bb":
 			if query == "" {
 				m.Reply(helpers.InputQuery)
 				return
@@ -423,7 +423,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 			m.Reply(data.Data)
 			m.React(helpers.Success)
 			break
-		case "ai3":, case "bard":, case "gbard":
+		case "ai3", case "bard", case "gbard":
 			if query == "" {
 				m.Reply(helpers.InputQuery)
 				return

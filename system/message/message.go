@@ -385,7 +385,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 
 			break
 
-		case "ai2":
+		case "ai2": case "blackbox":
 			if query == "" {
 				m.Reply(helpers.InputQuery)
 				return

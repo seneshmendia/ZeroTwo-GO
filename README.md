@@ -4,8 +4,8 @@
 
 ## Requirement
 
--This repo require a [Go](https://go.dev/) >= 1.17
--You Must Edite .env File !!
+1. This repo require a [Go](https://go.dev/) >= 1.17
+2. You Must Edite .env File !!
 
 ## How To Run ?
 

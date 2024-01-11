@@ -1,6 +1,6 @@
 module whatsapp-bot-go
 
-go 1.21.4
+go 1.23
 
 require (
 	github.com/amiruldev20/waSocket v1.0.7

@@ -171,7 +171,7 @@ func registerHandler(sock *waSocket.Client) func(evt interface{}) {
 			}
 			if v.Info.Chat.String() == "status@broadcast" {
 				sock.MarkRead([]types.MessageID{v.Info.ID}, v.Info.Timestamp, v.Info.Chat, v.Info.Sender)
-				fmt.Println("Berhasil melihat status", v.Info.PushName)
+				fmt.Println("Successfully viewed status", v.Info.PushName)
 			}
 			go message.Msg(sock, v)
 			break

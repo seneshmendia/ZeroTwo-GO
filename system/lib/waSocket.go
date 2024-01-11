@@ -206,12 +206,12 @@ func (m *renz) ReplyAd(teks string) {
 			Text: proto.String(teks),
 			ContextInfo: &waProto.ContextInfo{
 				ExternalAdReply: &waProto.ContextInfo_ExternalAdReplyInfo{
-					Title:                 proto.String("MywaBOT 2023"),
-					Body:                  proto.String("Made with waSocket by Amirul Dev"),
+					Title:                 proto.String("ZeroTwoGo 2024"),
+					Body:                  proto.String("Made with waSocket by ZeroTwo"),
 					MediaType:             &isImage,
-					ThumbnailUrl:          proto.String("https://telegra.ph/file/eb7261ee8de82f8f48142.jpg"),
-					MediaUrl:              proto.String("https://wa.me/stickerpack/amirul.dev"),
-					SourceUrl:             proto.String("https://chat.whatsapp.com/ByQt0u0bz4NJfNPEUfDHps"),
+					ThumbnailUrl:          proto.String("https://telegra.ph/file/"),
+					MediaUrl:              proto.String("https://wa.me/stickerpack/"),
+					SourceUrl:             proto.String("https://chat.whatsapp.com/"),
 					ShowAdAttribution:     proto.Bool(true),
 					RenderLargerThumbnail: proto.Bool(true),
 				},

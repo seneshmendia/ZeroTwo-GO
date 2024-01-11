@@ -113,8 +113,7 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 		case "menu":
 			m.Reply(`*Hello `+ m.Msg.Info.PushName +` 👋*
 
-*ZeroTwo-GO Whatsapp Bot 👾*
-
+*I'm ZeroTwo-MD Whatsapp Bot Go Edition 👾*
 
 *🤖 Ai Commands 🚪*
 

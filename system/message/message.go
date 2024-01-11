@@ -371,12 +371,6 @@ func Msg(sock *waSocket.Client, msg *events.Message) {
 				m.React(helpers.Failed)
 				return
 			}
-			dataai = data.Data
-			if dataai != nil {
-				m.Reply("Request Fail !!")
-				m.React(helpers.Failed)
-				return
-			}
 			fullURL.RawQuery = params.Encode()
 
 			err = lib.ReqGet(fullURL.String(), &data)
